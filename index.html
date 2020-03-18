@@ -1,0 +1,124 @@
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+
+<div id="content" text-align="center">
+    <canvas id="myChart1" width="1300" height="400"></canvas>
+</div>
+
+<script type="text/javascript">
+    function Diagram() {
+        const ctx1 = document.getElementById("myChart1");
+        const myChart1 = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Efficiency',
+                        data: [],
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        fill: false
+                    },
+                ]
+            },
+            options: {
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                },
+                responsive: false,
+                scales: {
+                    xAxes: [{
+                        display: true
+                    }],
+                    yAxes: [{
+                        display: true
+                    }]
+                }
+            }
+        });
+
+        let productivity = [], arrayOfN = [];
+
+        for (let i=100; i<1000; i=i+2) {
+            arrayOfN[i-100] = i;
+        }
+
+        for (let i=100; i<1000; i=i+2) {
+            const n = 8, w = 1200, N = i;
+            let x1 = [], y1 = [], sum = 0, dispersion = 0, Fp = [], rand1=[], rand2=[];
+            let arrayOfFi1 = [], arrayOfFi2 = [], arrayOfFr1 = [], arrayOfFr2 = [];
+            let dictArrayOfFi1 = [], dictArrayOfFi2 = [], dictArrayOfFr1 = [], dictArrayOfFr2 = [];
+
+            for (let i=0; i<n; i++) {
+                rand1[i] = Math.random();
+                rand2[i] = Math.random();
+            }
+
+            for (let i=0; i < N; i++) {
+                let ytemp = 0;
+                for (let j=0; j<n; j++) {
+                    ytemp += rand1[j]*Math.sin(w/n*((j+1)*i)+rand2[j]);
+                }
+                sum += ytemp;
+                y1[i] = ytemp;
+                x1[i] = i;
+            }
+
+            const dictReal1 = new Map(), dictIrreal1 = new Map(), dictReal2 = new Map(), dictIrreal2 = new Map();
+
+            for (let i=0; i<N; i++) {
+                dictArrayOfFi1[i] = new Array(N/2);
+                dictArrayOfFr1[i] = new Array(N/2);
+                dictArrayOfFi2[i] = new Array(N/2);
+                dictArrayOfFr2[i] = new Array(N/2);
+            }
+
+            for (let p=0; p<N; p++) {
+                for (let k=0; k<(N/2)-1; k++) {
+                    if (!dictIrreal1.get(p*k)) {
+                        dictIrreal1.set(p*k, y1[2*k]*Math.sin((4*Math.PI*p*k)/N));
+                    }
+                    if (!dictReal1.get(p*k)) {
+                        dictReal1.set(p*k, y1[2*k]*Math.cos((4*Math.PI*p*k)/N));
+                    }
+                    if (!dictIrreal2.get(p*k)) {
+                        dictIrreal2.set(p*k, y1[2*k + 1]*Math.sin((2*Math.PI*p*(2*k + 1))/N));
+                    }
+                    if (!dictReal2.get(p*k)) {
+                        dictReal2.set(p*k, y1[2*k + 1]*Math.cos((2*Math.PI*p*(2*k + 1))/N));
+                    }
+                }
+            }
+
+            productivity[N-100] = (dictReal1.size + dictReal2.size)/Math.pow(N, 2)*100;
+
+            // for (let p=0; p<N; p++) {
+            //     let Fi1 = 0, Fr1 = 0, Fi2 = 0, Fr2 = 0;
+            //     for (let k=0; k<(N/2)-1; k++) {
+            //         Fi1 += arrayOfFi1[p][k];
+            //         Fr1 += arrayOfFr1[p][k];
+            //         Fi2 += arrayOfFi2[p][k];
+            //         Fr2 += arrayOfFr2[p][k];
+            //     }
+            //     Fp[p] = Math.sqrt(Math.pow(Fr1 + Fr2, 2) + Math.pow(Fi1 + Fi2, 2));
+            // }
+        }
+
+        for (let i=0; i<productivity.length; i=i+2) {
+            productivity[i+1] = productivity[i];
+        }
+
+        console.log(productivity);
+
+        myChart1.data.labels = arrayOfN;
+        myChart1.data.datasets[0].data = productivity;
+
+        myChart1.update();
+
+    }
+
+    window.addEventListener("load", Diagram);
+</script>
